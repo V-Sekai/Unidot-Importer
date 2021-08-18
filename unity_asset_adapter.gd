@@ -506,8 +506,11 @@ class FbxHandler extends BaseModelHandler:
 		var tmp_bin_output_path: String = tmpdir + "/FBX_TEMP/buffer.bin"
 		if SHOULD_CONVERT_TO_GLB:
 			output_path = path.get_basename() + ".glb"
-		var stdout: Array = [].duplicate()
-		var addon_path: String = post_import_material_remap_script.resource_path.get_base_dir().plus_file("FBX2glTF.exe")
+		var stdout: Array = [].duplicate()		
+		var fbx_2_gltf_path : String = "FBX2glTF.exe"
+		if OS.get_name() == "X11":
+			fbx_2_gltf_path = "FBX2glTF"
+		var addon_path: String = post_import_material_remap_script.resource_path.get_base_dir().plus_file(fbx_2_gltf_path)
 		if addon_path.begins_with("res://"):
 			addon_path = addon_path.substr(6)
 		# --long-indices auto
@@ -532,7 +535,9 @@ class FbxHandler extends BaseModelHandler:
 		var data: String = f.get_buffer(f.get_length()).get_string_from_utf8()
 		f.close()
 		var jsonres = JSON.new()
-		jsonres.parse(data)
+		var err = jsonres.parse(data)
+		if err != OK:
+			return "cannot_import_asset"
 		var json: Dictionary = jsonres.get_data()
 		var bindata: PackedByteArray
 		if SHOULD_CONVERT_TO_GLB:
